@@ -1,36 +1,87 @@
 //create web server
-//import express
 const express = require('express');
 const router = express.Router();
+const db = require('../models');
+const { Comment } = require('../models');
 
-//import model
-const Comment = require('../models/Comment');
-
-// @route GET api/comments
-// @desc Get all comments
-// @access Public
+// GET /comments
 router.get('/', (req, res) => {
-    Comment.find()
-        .sort({ date: -1 })
-        .then(comments => res.json(comments));
-});
-
-// @route POST api/comments
-// @desc Create a comment
-// @access Public
-router.post('/', (req, res) => {
-    const newComment = new Comment({
-        name: req.body.name,
-        comment: req.body.comment
+    db.Comment.findAll()
+    .then(comments => {
+        res.json(comments);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).end();
     });
-    newComment.save().then(comment => res.json(comment));
 });
 
-// @route DELETE api/comments/:id
-// @desc Delete a comment
-// @access Public
-router.delete('/:id', (req, res) => {
-    Comment.findById(req.params.id)
-        .then(comment => comment.remove().then(() => res.json({ success: true })))
-        .catch(err => res.status(404).json({ success: false }));
+// GET /comments/:id
+router.get('/:id', (req, res) => {
+    db.Comment.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    .then(comment => {
+        res.json(comment);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).end();
+    });
 });
+
+// POST /comments
+router.post('/', (req, res) => {
+    db.Comment.create({
+        name: req.body.name,
+        email: req.body.email,
+        message: req.body.message
+    })
+    .then(newComment => {
+        res.json(newComment);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).end();
+    });
+});
+
+// PUT /comments/:id
+router.put('/:id', (req, res) => {
+    db.Comment.update({
+        name: req.body.name,
+        email: req.body.email,
+        message: req.body.message
+    }, {
+        where: {
+            id: req.params.id
+        }
+    })
+    .then(updatedComment => {
+        res.json(updatedComment);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).end();
+    });
+});
+
+// DELETE /comments/:id
+router.delete('/:id', (req, res) => {
+    db.Comment.destroy({
+        where: {
+            id: req.params.id
+        }
+    })
+    .then(deletedComment => {
+        res.json(deletedComment);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).end();
+    });
+});
+
+module.exports = router;
